@@ -1,0 +1,14 @@
+services:
+  # Backend Service
+  - type: web
+    name: chatify-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend
+    startCommand: npm start --prefix backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    autoDeploy: true
