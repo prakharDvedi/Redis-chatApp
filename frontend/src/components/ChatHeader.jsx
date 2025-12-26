@@ -2,6 +2,7 @@ import { XIcon } from "lucide-react";
 import { useChatStore } from "../store/useChatStore";
 import { useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
+import { lastseen } from "../lib/utils";
 
 function ChatHeader() {
   const { selectedUser, setSelectedUser } = useChatStore();
@@ -38,7 +39,7 @@ function ChatHeader() {
             {selectedUser.fullName}
           </h3>
           <p className="text-slate-400 text-sm">
-            {isOnline ? "Online" : "Offline"}
+            {isOnline ? "Online" : lastseen(selectedUser.lastSeen)}
           </p>
         </div>
       </div>

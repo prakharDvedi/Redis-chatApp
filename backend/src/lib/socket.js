@@ -64,6 +64,8 @@ io.on("connection", async (socket) => {
     } catch (error) {
       console.error("Redis SREM failed:", error.message);
     }
+
+    //last seen function
     try {
       await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
       console.log(`${userId} lastSeen updated in MongoDB`);
