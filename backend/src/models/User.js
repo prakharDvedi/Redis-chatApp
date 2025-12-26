@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    //for online redis ka stats
+    lastSeen: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true } // createdAt & updatedAt
 );
