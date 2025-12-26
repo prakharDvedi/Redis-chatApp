@@ -5,6 +5,8 @@ import { ENV } from "./env.js";
 import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 import redis from "./redis.js";
 
+import User from "../models/User.js";
+
 const app = express();
 const server = http.createServer(app);
 
@@ -62,7 +64,12 @@ io.on("connection", async (socket) => {
     } catch (error) {
       console.error("Redis SREM failed:", error.message);
     }
-
+    try {
+      await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
+      console.log(`${userId} lastSeen updated in MongoDB`);
+    } catch (error) {
+      console.error("MongoDB lastSeen update failed:", error.message);
+    }
     // broadcast updated online users
     try {
       const onlineUsers = await redis.smembers("online_users");
