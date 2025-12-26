@@ -3,6 +3,7 @@ import http from "http";
 import express from "express";
 import { ENV } from "./env.js";
 import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
+import redis from "./redis.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -26,20 +27,50 @@ export function getReceiverSocketId(userId) {
 // this is for storig online users
 const userSocketMap = {}; // {userId:socketId}
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   console.log("A user connected", socket.user.fullName);
 
   const userId = socket.userId;
   userSocketMap[userId] = socket.id;
 
-  // io.emit() is used to send events to all connected clients
-  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  // Add to Redis SET for persistent online status
+  try {
+    await redis.sadd("online_users", userId);
+    console.log(`${userId} added to Redis`);
+  } catch (error) {
+    console.error("Redis SADD failed:", error.message);
+  }
 
-  // with socket.on we listen for events from clients
-  socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.user.fullName);
-    delete userSocketMap[userId];
+  // get online user from redis
+  try {
+    const onlineUsers = await redis.smembers("online_users");
+    io.emit("getOnlineUsers", onlineUsers);
+  } catch (error) {
+    console.error("Redis SMEMBERS failed, using fallback");
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  }
+
+  socket.on("disconnect", async () => {
+    console.log("A user disconnected", socket.user.fullName);
+
+    delete userSocketMap[userId];
+
+    // Remove from Redis SET
+    try {
+      await redis.srem("online_users", userId);
+      console.log(`${userId} removed from Redis`);
+    } catch (error) {
+      console.error("Redis SREM failed:", error.message);
+    }
+
+    // broadcast updated online users
+    try {
+      const onlineUsers = await redis.smembers("online_users");
+      io.emit("getOnlineUsers", onlineUsers);
+    } catch (error) {
+      console.error("Redis SMEMBERS failed, using fallback");
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    }
   });
 });
 
