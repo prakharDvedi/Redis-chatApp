@@ -14,23 +14,6 @@ Modern chat applications require more than basic CRUD operations. They need:
 
 This project solves these challenges using industry-standard tools and patterns.
 
-## Architecture Overview
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Frontend  │────▶│   Backend    │────▶│   MongoDB   │
-│   (React)   │     │  (Node.js)   │     │ (Messages)  │
-└─────────────┘     └──────────────┘     └─────────────┘
-                           │
-                           │
-                    ┌──────┴──────┐
-                    ↓             ↓
-              ┌──────────┐  ┌──────────┐
-              │  Redis   │  │ Cloudinary│
-              │(Presence)│  │  (Media)  │
-              └──────────┘  └──────────┘
-```
-
 **Key Design Decisions:**
 
 ### 1. Hybrid State Management
